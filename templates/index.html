@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <form action="{{ url_for('scrape') }}" method="POST" id="scrapeForm">
+        <div class="form-group">
+            <label for="zip_codes">Enter Zip Codes</label>
+            <textarea 
+                name="zip_codes" 
+                id="zip_codes" 
+                rows="3" 
+                placeholder="Enter zip codes separated by spaces or commas (e.g., 90210 10001 30301)"
+                required
+            ></textarea>
+            <small style="color: var(--gray-600); display: block; margin-top: 0.5rem;">
+                You can enter multiple zip codes at once. Each zip code will generate a separate report.
+            </small>
+        </div>
+        
+        <div class="form-group">
+            <label>Output Options</label>
+            <div class="checkbox-group">
+                <label class="checkbox-item">
+                    <input type="checkbox" name="create_csv" checked>
+                    <span>Generate GHL-ready CSV</span>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" name="create_sheets" {% if not sheets_available %}disabled{% endif %}>
+                    <span>Create Google Sheets</span>
+                    {% if not sheets_available %}
+                        <span class="badge badge-gray">Not configured</span>
+                    {% endif %}
+                </label>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                Start Scraping
+            </button>
+        </div>
+    </form>
+    
+    <div class="loading" id="loadingIndicator">
+        <div class="spinner"></div>
+        <span>Scraping agents... This may take a few minutes.</span>
+    </div>
+</div>
+
+<div class="card">
+    <h2 class="mb-2">How It Works</h2>
+    <ol style="margin-left: 1.5rem; color: var(--gray-600);">
+        <li class="mb-1">Enter one or more zip codes in the input field above</li>
+        <li class="mb-1">Select your output options (CSV and/or Google Sheets)</li>
+        <li class="mb-1">Click "Start Scraping" to begin extracting agent data</li>
+        <li class="mb-1">Download your GHL-ready CSV or access your Google Sheets</li>
+    </ol>
+    
+    <h3 class="mt-2 mb-1">Auto-Generated Tags</h3>
+    <p style="color: var(--gray-600);">Each agent automatically receives tags for GHL import:</p>
+    <div style="margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.5rem;">
+        <span class="badge badge-primary">Zip: 90210</span>
+        <span class="badge badge-primary">Deals: 21-30</span>
+        <span class="badge badge-success">Has Phone</span>
+        <span class="badge badge-success">Has Email</span>
+        <span class="badge badge-gray">Exp: 10+ Years</span>
+        <span class="badge badge-gray">Rating: Top Rated</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('scrapeForm').addEventListener('submit', function() {
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('submitBtn').innerHTML = 'Processing...';
+    document.getElementById('loadingIndicator').classList.add('active');
+});
+</script>
+{% endblock %}

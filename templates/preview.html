@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Preview - {{ zip_code }} - Realtor Agent Scraper{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+            <h2>Agents in {{ zip_code }}</h2>
+            <p style="color: var(--gray-600);">{{ agents|length }} agents found, sorted by recent sales</p>
+        </div>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back
+        </a>
+    </div>
+    
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Brokerage</th>
+                    <th class="text-center">Experience</th>
+                    <th class="text-center">Recent Sales</th>
+                    <th class="text-center">Active Listings</th>
+                    <th class="text-center">Rating</th>
+                    <th>Specialties</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for agent in agents %}
+                <tr>
+                    <td style="color: var(--gray-400);">{{ loop.index }}</td>
+                    <td>
+                        {% if agent.profile_url %}
+                            <a href="{{ agent.profile_url }}" target="_blank" style="color: var(--primary); font-weight: 500;">
+                                {{ agent.name }}
+                            </a>
+                        {% else %}
+                            <span style="font-weight: 500;">{{ agent.name }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if agent.phone %}
+                            <a href="tel:{{ agent.phone }}" style="color: var(--success);">{{ agent.phone }}</a>
+                        {% else %}
+                            <span style="color: var(--gray-300);">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if agent.email %}
+                            <a href="mailto:{{ agent.email }}" style="color: var(--primary);">{{ agent.email }}</a>
+                        {% else %}
+                            <span style="color: var(--gray-300);">—</span>
+                        {% endif %}
+                    </td>
+                    <td style="max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ agent.brokerage or '' }}">
+                        {{ agent.brokerage or '—' }}
+                    </td>
+                    <td class="text-center">
+                        {% if agent.years_experience %}
+                            {{ agent.years_experience }} yrs
+                        {% else %}
+                            <span style="color: var(--gray-300);">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <strong style="{% if agent.recent_sales_count >= 30 %}color: var(--success);{% elif agent.recent_sales_count >= 10 %}color: var(--primary);{% endif %}">
+                            {{ agent.recent_sales_count }}
+                        </strong>
+                    </td>
+                    <td class="text-center">{{ agent.active_listings }}</td>
+                    <td class="text-center">
+                        {% if agent.rating %}
+                            <span style="color: #f59e0b;">★</span> {{ "%.1f"|format(agent.rating) }}
+                        {% else %}
+                            <span style="color: var(--gray-300);">—</span>
+                        {% endif %}
+                    </td>
+                    <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.875rem; color: var(--gray-600);" title="{{ agent.specialties or '' }}">
+                        {{ agent.specialties or '—' }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

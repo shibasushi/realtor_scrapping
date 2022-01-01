@@ -1,0 +1,22 @@
+# Flask web framework
+Flask==3.0.0
+Werkzeug==3.0.1
+
+# HTTP requests and parsing
+requests==2.31.0
+beautifulsoup4==4.12.2
+lxml==5.1.0
+
+# Google Sheets integration
+gspread==6.0.0
+google-auth==2.25.2
+google-auth-oauthlib==1.2.0
+
+# Excel/CSV handling
+openpyxl==3.1.2
+
+# Environment variables
+python-dotenv==1.0.0
+
+# Rate limiting
+ratelimit==2.2.1

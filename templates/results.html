@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Scraping Results - Realtor Agent Scraper{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2>Scraping Results</h2>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back to Search
+        </a>
+    </div>
+    
+    {% for result in results %}
+    <div class="card" style="border-left: 4px solid {% if result.error %}var(--error){% elif result.agent_count > 0 %}var(--success){% else %}var(--warning){% endif %};">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h3 style="margin-bottom: 0.5rem;">
+                    Zip Code: {{ result.zip_code }}
+                    <span class="badge {% if result.agent_count > 0 %}badge-success{% else %}badge-gray{% endif %}" style="margin-left: 0.5rem;">
+                        {{ result.agent_count }} agents found
+                    </span>
+                </h3>
+                
+                {% if result.error %}
+                    <div class="alert alert-error" style="margin-top: 0.5rem; margin-bottom: 0;">
+                        {{ result.error }}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                {% if result.csv_filename %}
+                    <a href="{{ url_for('download_csv', filename=result.csv_filename) }}" class="btn btn-success">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                        </svg>
+                        Download CSV
+                    </a>
+                {% endif %}
+                
+                {% if result.sheet_url %}
+                    <a href="{{ result.sheet_url }}" target="_blank" class="btn btn-primary">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/>
+                        </svg>
+                        Open Sheet
+                    </a>
+                {% endif %}
+                
+                {% if result.agent_count > 0 %}
+                    <a href="{{ url_for('preview_agents', zip_code=result.zip_code) }}" class="btn btn-secondary">
+                        Preview Data
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if result.agents and result.agent_count > 0 %}
+        <div style="margin-top: 1.5rem; overflow-x: auto;">
+            <h4 style="margin-bottom: 0.75rem; color: var(--gray-600);">Top Agents by Recent Sales</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Brokerage</th>
+                        <th class="text-center">Recent Sales</th>
+                        <th class="text-center">Active Listings</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for agent in result.agents[:10] %}
+                    <tr>
+                        <td>
+                            {% if agent.profile_url %}
+                                <a href="{{ agent.profile_url }}" target="_blank" style="color: var(--primary);">{{ agent.name }}</a>
+                            {% else %}
+                                {{ agent.name }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if agent.phone %}
+                                <span class="badge badge-success" style="font-size: 0.75rem;">{{ agent.phone }}</span>
+                            {% else %}
+                                <span style="color: var(--gray-300);">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if agent.email %}
+                                <span class="badge badge-primary" style="font-size: 0.75rem;">{{ agent.email }}</span>
+                            {% else %}
+                                <span style="color: var(--gray-300);">—</span>
+                            {% endif %}
+                        </td>
+                        <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            {{ agent.brokerage or '—' }}
+                        </td>
+                        <td class="text-center">
+                            <strong>{{ agent.recent_sales_count }}</strong>
+                        </td>
+                        <td class="text-center">{{ agent.active_listings }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            {% if result.agent_count > 10 %}
+            <p style="margin-top: 1rem; color: var(--gray-600); font-size: 0.875rem;">
+                Showing top 10 of {{ result.agent_count }} agents. 
+                <a href="{{ url_for('preview_agents', zip_code=result.zip_code) }}">View all</a>
+            </p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<div class="card" style="background: var(--gray-50);">
+    <h3 style="margin-bottom: 1rem;">GHL Import Instructions</h3>
+    <ol style="margin-left: 1.5rem; color: var(--gray-600);">
+        <li class="mb-1">Download the CSV file(s) above</li>
+        <li class="mb-1">Go to GoHighLevel → Contacts → Import</li>
+        <li class="mb-1">Upload the CSV file</li>
+        <li class="mb-1">Map the columns:
+            <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                <li><code>firstName</code> → First Name</li>
+                <li><code>lastName</code> → Last Name</li>
+                <li><code>email</code> → Email</li>
+                <li><code>phone</code> → Phone</li>
+                <li><code>companyName</code> → Company</li>
+                <li><code>tags</code> → Tags</li>
+                <li><code>customField.*</code> → Create custom fields as needed</li>
+            </ul>
+        </li>
+        <li class="mb-1">Complete the import</li>
+    </ol>
+</div>
+{% endblock %}
